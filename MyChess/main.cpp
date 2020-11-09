@@ -8,19 +8,19 @@ bool pawnToQueen = false;
 bool deathWhiteKing = false;
 bool deathBlackKing = false;
 
-class Figur;
+class Figure;
 enum CellColor {
 	GREEN, RED, BLUE, WHITE
 };
 class Board {
 public:
-	class Ñell;
+	class Cell;
 	Board(int scale) {
 		this->scale = scale;
 		bool colorCall = false;
 		for (int y = 0; y < 8; y++) {
 			for (int x = 0; x < 8; x++) {
-				this->cells.push_back(Ñell(x * scale, y * scale, x, y, getOtherColorCall(colorCall), scale));
+				this->cells.push_back(Cell(x * scale, y * scale, x, y, getOtherColorCall(colorCall), scale));
 				colorCall = getOtherColorCall(colorCall);
 			}
 			colorCall = getOtherColorCall(colorCall);
@@ -36,7 +36,7 @@ public:
 		}
 	}
 
-	Ñell* getCell(int x, int y) {
+	Cell* getCell(int x, int y) {
 		for (int i = 0; i < 64; i++) {
 			if (x / scale == cells[i].coordinateCell_X && y / scale == cells[i].coordinateCell_Y) {
 				return &cells[i];
@@ -59,9 +59,9 @@ public:
 		}
 	}
 
-	class Ñell {
+	class Cell {
 	public:
-		Ñell(const int xSize, const int ySize, int x, int y, bool color, int scale) {
+		Cell(const int xSize, const int ySize, int x, int y, bool color, int scale) {
 			this->sizeCell_X = xSize;
 			this->sizeCell_Y = ySize;
 			this->centrSizeCell_X = this->sizeCell_X + scale / 2;
@@ -94,21 +94,21 @@ public:
 		int centrSizeCell_Y;
 		bool color = true;
 		int scale;
-		Figur* figur = nullptr;
+		Figure* figur = nullptr;
 	};
-	vector<Ñell> cells;
+	vector<Cell> cells;
 	unsigned int scale;
 
 }board(64);
 
-vector<Figur*> figurs;
+vector<Figure*> figurs;
 struct activFigureMouse {
 	int g_state;
 	float g_x = 0.0;
 	float g_y = 0.0;
-	Figur* figure_r = nullptr;
-	Board::Ñell* cell_r = nullptr;
-	Board::Ñell* prev_cell_r = nullptr;
+	Figure* figure_r = nullptr;
+	Board::Cell* cell_r = nullptr;
+	Board::Cell* prev_cell_r = nullptr;
 
 	void nullData() {
 		prev_cell_r = nullptr;
@@ -120,9 +120,9 @@ struct activFigureMouse {
 	}
 } afm;
 
-class Figur {
+class Figure {
 public:
-	Figur(Board::Ñell* cell, bool command, int scale) {
+	Figure(Board::Cell* cell, bool command, int scale) {
 		this->teamColor = command;
 		cell->figur = this;
 		centrSizeFigur_X = cell->centrSizeCell_X;
@@ -132,9 +132,9 @@ public:
 	}
 
 	virtual void drawFigurPawn() = 0;
-	virtual bool checkMoveFigures(Board::Ñell* cell) = 0;
+	virtual bool checkMoveFigures(Board::Cell* cell) = 0;
 
-	void muveFigure(Board::Ñell* cell) {
+	void muveFigure(Board::Cell* cell) {
 		centrSizeFigur_X = cell->centrSizeCell_X;
 		centrSizeFigur_Y = cell->centrSizeCell_Y;
 		coordinateFigur_X = cell->coordinateCell_X;
@@ -142,9 +142,9 @@ public:
 		cell->figur = this;
 	}
 
-	void figureAttack(Board::Ñell* cell) {
+	void figureAttack(Board::Cell* cell) {
 
-		for (vector<Figur*>::const_iterator iter = figurs.begin(); iter != figurs.end(); iter++) {
+		for (vector<Figure*>::const_iterator iter = figurs.begin(); iter != figurs.end(); iter++) {
 			if (*iter == cell->figur) {
 				figurs.erase(iter);
 				break;
@@ -155,7 +155,7 @@ public:
 		this->muveFigure(cell);
 	}
 
-	virtual ~Figur() {}
+	virtual ~Figure() {}
 
 	int coordinateFigur_X;
 	int coordinateFigur_Y;
@@ -164,9 +164,9 @@ public:
 	bool teamColor;
 	bool active = true;
 };
-class FigurRook : public Figur {
+class FigureRook : public Figure {
 public:
-	FigurRook(Board::Ñell* cell, bool command, int scale) :Figur(cell, command, scale) {}
+	FigureRook(Board::Cell* cell, bool command, int scale) :Figure(cell, command, scale) {}
 
 	void drawFigurPawn() {
 		if (teamColor) {
@@ -197,7 +197,7 @@ public:
 		glEnd();
 	}
 
-	bool checkMoveFigures(Board::Ñell* cell) {
+	bool checkMoveFigures(Board::Cell* cell) {
 		if (coordinateFigur_X == cell->coordinateCell_X && coordinateFigur_Y > cell->coordinateCell_Y) {
 			for (int iy = coordinateFigur_Y - 1; iy > cell->coordinateCell_Y; iy--) {
 				if (board.getCell(cell->centrSizeCell_X, cell->scale*iy + cell->scale / 2)->figur != nullptr) {
@@ -284,11 +284,11 @@ public:
 		}
 	}
 
-	virtual ~FigurRook() {}
+	virtual ~FigureRook() {}
 };
-class FigurKnight : public Figur {
+class FigureKnight : public Figure {
 public:
-	FigurKnight(Board::Ñell* cell, bool command, int scale) :Figur(cell, command, scale) {}
+	FigureKnight(Board::Cell* cell, bool command, int scale) :Figure(cell, command, scale) {}
 
 	void drawFigurPawn() {
 		if (teamColor) {
@@ -312,7 +312,7 @@ public:
 		glEnd();
 	}
 
-	bool checkMoveFigures(Board::Ñell* cell) {
+	bool checkMoveFigures(Board::Cell* cell) {
 		if ((coordinateFigur_X - 1 == cell->coordinateCell_X && coordinateFigur_Y - 2 == cell->coordinateCell_Y) ||
 			(coordinateFigur_X + 1 == cell->coordinateCell_X && coordinateFigur_Y - 2 == cell->coordinateCell_Y) ||
 			(coordinateFigur_X + 2 == cell->coordinateCell_X && coordinateFigur_Y - 1 == cell->coordinateCell_Y) ||
@@ -338,11 +338,11 @@ public:
 		}
 	}
 
-	virtual ~FigurKnight() {}
+	virtual ~FigureKnight() {}
 };
-class FigurBishop : public Figur {
+class FigureBishop : public Figure {
 public:
-	FigurBishop(Board::Ñell* cell, bool command, int scale) :Figur(cell, command, scale) {}
+	FigureBishop(Board::Cell* cell, bool command, int scale) :Figure(cell, command, scale) {}
 
 	void drawFigurPawn() {
 		if (teamColor) {
@@ -366,7 +366,7 @@ public:
 		glEnd();
 	}
 
-	bool checkMoveFigures(Board::Ñell* cell) {
+	bool checkMoveFigures(Board::Cell* cell) {
 		if (cell->coordinateCell_X - coordinateFigur_X == cell->coordinateCell_Y - coordinateFigur_Y && cell->coordinateCell_X > coordinateFigur_X && cell->coordinateCell_Y > coordinateFigur_Y) {
 			int iy = coordinateFigur_Y + 1, ix = coordinateFigur_X + 1;
 			while (cell->coordinateCell_X > ix && cell->coordinateCell_Y > iy) {
@@ -459,11 +459,11 @@ public:
 			return false;
 		}
 	}
-	virtual ~FigurBishop() {}
+	virtual ~FigureBishop() {}
 };
-class FigurQueen : public Figur {
+class FigureQueen : public Figure {
 public:
-	FigurQueen(Board::Ñell* cell, bool command, int scale) :Figur(cell, command, scale) {}
+	FigureQueen(Board::Cell* cell, bool command, int scale) :Figure(cell, command, scale) {}
 
 	void drawFigurPawn() {
 		if (teamColor) {
@@ -491,7 +491,7 @@ public:
 		glEnd();
 	}
 
-	bool checkMoveFigures(Board::Ñell* cell) {
+	bool checkMoveFigures(Board::Cell* cell) {
 		if (cell->coordinateCell_X - coordinateFigur_X == cell->coordinateCell_Y - coordinateFigur_Y && cell->coordinateCell_X > coordinateFigur_X && cell->coordinateCell_Y > coordinateFigur_Y) {
 			int iy = coordinateFigur_Y + 1, ix = coordinateFigur_X + 1;
 			while (cell->coordinateCell_X > ix && cell->coordinateCell_Y > iy) {
@@ -662,11 +662,11 @@ public:
 		}
 	}
 
-	virtual ~FigurQueen() {}
+	virtual ~FigureQueen() {}
 };
-class FigurKing : public Figur {
+class FigureKing : public Figure {
 public:
-	FigurKing(Board::Ñell* cell, bool command, int scale) :Figur(cell, command, scale) {}
+	FigureKing(Board::Cell* cell, bool command, int scale) :Figure(cell, command, scale) {}
 
 	void drawFigurPawn() {
 		if (teamColor) {
@@ -720,7 +720,7 @@ public:
 		glEnd();
 	}
 
-	bool checkMoveFigures(Board::Ñell* cell) {
+	bool checkMoveFigures(Board::Cell* cell) {
 		if ((coordinateFigur_X - 1 == cell->coordinateCell_X && coordinateFigur_Y - 1 == cell->coordinateCell_Y) ||
 			(coordinateFigur_X == cell->coordinateCell_X && coordinateFigur_Y - 1 == cell->coordinateCell_Y) ||
 			(coordinateFigur_X + 1 == cell->coordinateCell_X && coordinateFigur_Y - 1 == cell->coordinateCell_Y) ||
@@ -746,12 +746,12 @@ public:
 		}
 	}
 
-	virtual ~FigurKing() {}
+	virtual ~FigureKing() {}
 };
-class FigurPawn : public Figur {
+class FigurePawn : public Figure {
 public:
 
-	FigurPawn(Board::Ñell* cell, bool command, int scale) :Figur(cell, command, scale) {}
+	FigurePawn(Board::Cell* cell, bool command, int scale) :Figure(cell, command, scale) {}
 
 	void drawFigurPawn() {
 		if (teamColor) {
@@ -773,7 +773,7 @@ public:
 		glEnd();
 	}
 
-	bool checkMoveFigures(Board::Ñell* cell) {
+	bool checkMoveFigures(Board::Cell* cell) {
 		if (teamColor) {
 			if (coordinateFigur_Y + 1 == cell->coordinateCell_Y && coordinateFigur_X == cell->coordinateCell_X) {
 				if (cell->figur == nullptr) {
@@ -871,9 +871,9 @@ public:
 	bool firstMovePawn = true;
 };
 
-void convertToQueen(Board::Ñell* cell) {
+void convertToQueen(Board::Cell* cell) {
 	bool curCommand = cell->figur->teamColor;
-	for (vector<Figur*>::const_iterator iter = figurs.begin(); iter != figurs.end(); iter++) {
+	for (vector<Figure*>::const_iterator iter = figurs.begin(); iter != figurs.end(); iter++) {
 		if (*iter == cell->figur) {
 			figurs.erase(iter);
 			break;
@@ -881,7 +881,7 @@ void convertToQueen(Board::Ñell* cell) {
 	}
 	delete cell->figur;
 	cell->figur = nullptr;
-	figurs.push_back(new FigurQueen(cell, curCommand, cell->scale));
+	figurs.push_back(new FigureQueen(cell, curCommand, cell->scale));
 	pawnToQueen = false;
 }
 
@@ -891,30 +891,30 @@ void drawFigure() {
 	}
 }
 void createFigure() {
-	figurs.push_back(new FigurRook(&(board.cells[0]), true, board.scale));
-	figurs.push_back(new FigurRook(&(board.cells[7]), true, board.scale));
-	figurs.push_back(new FigurKnight(&(board.cells[1]), true, board.scale));
-	figurs.push_back(new FigurKnight(&(board.cells[6]), true, board.scale));
-	figurs.push_back(new FigurBishop(&(board.cells[2]), true, board.scale));
-	figurs.push_back(new FigurBishop(&(board.cells[5]), true, board.scale));
-	figurs.push_back(new FigurKing(&(board.cells[3]), true, board.scale));
-	figurs.push_back(new FigurQueen(&(board.cells[4]), true, board.scale));
+	figurs.push_back(new FigureRook(&(board.cells[0]), true, board.scale));
+	figurs.push_back(new FigureRook(&(board.cells[7]), true, board.scale));
+	figurs.push_back(new FigureKnight(&(board.cells[1]), true, board.scale));
+	figurs.push_back(new FigureKnight(&(board.cells[6]), true, board.scale));
+	figurs.push_back(new FigureBishop(&(board.cells[2]), true, board.scale));
+	figurs.push_back(new FigureBishop(&(board.cells[5]), true, board.scale));
+	figurs.push_back(new FigureKing(&(board.cells[3]), true, board.scale));
+	figurs.push_back(new FigureQueen(&(board.cells[4]), true, board.scale));
 
 	for (int i = 8; i < 16; i++) {
-		figurs.push_back(new FigurPawn(&(board.cells[i]), true, board.scale));
+		figurs.push_back(new FigurePawn(&(board.cells[i]), true, board.scale));
 	}
 
 	for (int i = 48; i < 56; i++) {
-		figurs.push_back(new FigurPawn(&(board.cells[i]), false, board.scale));
+		figurs.push_back(new FigurePawn(&(board.cells[i]), false, board.scale));
 	}
-	figurs.push_back(new FigurRook(&(board.cells[56]), false, board.scale));
-	figurs.push_back(new FigurRook(&(board.cells[63]), false, board.scale));
-	figurs.push_back(new FigurKnight(&(board.cells[57]), false, board.scale));
-	figurs.push_back(new FigurKnight(&(board.cells[62]), false, board.scale));
-	figurs.push_back(new FigurBishop(&(board.cells[58]), false, board.scale));
-	figurs.push_back(new FigurBishop(&(board.cells[61]), false, board.scale));
-	figurs.push_back(new FigurKing(&(board.cells[59]), false, board.scale));
-	figurs.push_back(new FigurQueen(&(board.cells[60]), false, board.scale));
+	figurs.push_back(new FigureRook(&(board.cells[56]), false, board.scale));
+	figurs.push_back(new FigureRook(&(board.cells[63]), false, board.scale));
+	figurs.push_back(new FigureKnight(&(board.cells[57]), false, board.scale));
+	figurs.push_back(new FigureKnight(&(board.cells[62]), false, board.scale));
+	figurs.push_back(new FigureBishop(&(board.cells[58]), false, board.scale));
+	figurs.push_back(new FigureBishop(&(board.cells[61]), false, board.scale));
+	figurs.push_back(new FigureKing(&(board.cells[59]), false, board.scale));
+	figurs.push_back(new FigureQueen(&(board.cells[60]), false, board.scale));
 }
 
 void movementFigure(bool team) {
