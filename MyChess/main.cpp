@@ -111,11 +111,11 @@ public:
 			return centrSizeCell_Y;
 		}
 
-		bool& getColorCell() {
+		bool getColorCell() {
 			return colorCell;
 		}
 
-		int& getScale() {
+		int getScale() {
 			return scale;
 		}
 
