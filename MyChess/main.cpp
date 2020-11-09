@@ -12,6 +12,7 @@ class Figure;
 enum CellColor {
 	GREEN, RED, BLUE, WHITE
 };
+
 class Board {
 public:
 	class Cell;
@@ -38,7 +39,7 @@ public:
 
 	Cell* getCell(int x, int y) {
 		for (int i = 0; i < 64; i++) {
-			if (x / scale == cells[i].coordinateCell_X && y / scale == cells[i].coordinateCell_Y) {
+			if (x / scale == cells[i].getCoordinateCell_X() && y / scale == cells[i].getCoordinateCell_Y()) {
 				return &cells[i];
 				break;
 			}
@@ -49,26 +50,26 @@ public:
 	void drawBoard() {
 
 		for (int i = 0; i < 64; i++) {
-			if (cells[i].color) {
+			if (cells[i].getColorCell()) {
 				glColor3f(0.9, 0.7, 0.5);
 			}
 			else {
 				glColor3f(0.25, 0.25, 0.25);
 			}
-			glRectf(cells[i].sizeCell_X, cells[i].sizeCell_Y, cells[i].sizeCell_X + scale, cells[i].sizeCell_Y + scale);
+			glRectf(cells[i].getSizeСell_X(), cells[i].getSizeCell_Y(), cells[i].getSizeСell_X() + scale, cells[i].getSizeCell_Y() + scale);
 		}
 	}
 
 	class Cell {
 	public:
 		Cell(const int xSize, const int ySize, int x, int y, bool color, int scale) {
-			this->sizeCell_X = xSize;
+			this->sizeСell_X = xSize;
 			this->sizeCell_Y = ySize;
-			this->centrSizeCell_X = this->sizeCell_X + scale / 2;
+			this->centrSizeCell_X = this->sizeСell_X + scale / 2;
 			this->centrSizeCell_Y = this->sizeCell_Y + scale / 2;
 			coordinateCell_X = x;
 			coordinateCell_Y = y;
-			this->color = color;
+			this->colorCell = color;
 			this->scale = scale;
 		}
 
@@ -80,22 +81,75 @@ public:
 			case WHITE:glColor3f(1.0, 1.0, 1.0); break;
 			}
 
-			glRectf(sizeCell_X, sizeCell_Y, sizeCell_X + 2, sizeCell_Y + scale);
-			glRectf(sizeCell_X, sizeCell_Y + scale - 2, sizeCell_X + scale, sizeCell_Y + scale);
-			glRectf(sizeCell_X + scale - 2, sizeCell_Y, sizeCell_X + scale, sizeCell_Y + scale);
-			glRectf(sizeCell_X, sizeCell_Y, sizeCell_X + scale, sizeCell_Y + 2);
+			glRectf(sizeСell_X, sizeCell_Y, sizeСell_X + 2, sizeCell_Y + scale);
+			glRectf(sizeСell_X, sizeCell_Y + scale - 2, sizeСell_X + scale, sizeCell_Y + scale);
+			glRectf(sizeСell_X + scale - 2, sizeCell_Y, sizeСell_X + scale, sizeCell_Y + scale);
+			glRectf(sizeСell_X, sizeCell_Y, sizeСell_X + scale, sizeCell_Y + 2);
 		}
+
+		int getCoordinateCell_X() {
+			return coordinateCell_X;
+		}
+
+		int getCoordinateCell_Y() {
+			return coordinateCell_Y;
+		}
+
+		int getSizeСell_X() {
+			return sizeСell_X;
+		}
+
+		int getSizeCell_Y() {
+			return sizeCell_Y;
+		}
+
+		int getCentrSizeCell_X() {
+			return centrSizeCell_X;
+		}
+
+		int& getCentrSizeCell_Y() {
+			return centrSizeCell_Y;
+		}
+
+		bool& getColorCell() {
+			return colorCell;
+		}
+
+		int& getScale() {
+			return scale;
+		}
+
+		void setFigure(Figure* otherFigure) {
+			figur = otherFigure;
+		}
+
+		Figure* getFigure() {
+			return figur;
+		}
+
+	private:
 
 		int coordinateCell_X;
 		int coordinateCell_Y;
-		int sizeCell_X;
+		int sizeСell_X;
 		int sizeCell_Y;
 		int centrSizeCell_X;
 		int centrSizeCell_Y;
-		bool color = true;
+		bool colorCell = true;
 		int scale;
 		Figure* figur = nullptr;
 	};
+
+	int getScale() {
+		return scale;
+	}
+
+	vector<Cell>& getCells() {
+		return cells;
+	}
+
+	private:
+
 	vector<Cell> cells;
 	unsigned int scale;
 
@@ -124,45 +178,64 @@ class Figure {
 public:
 	Figure(Board::Cell* cell, bool command, int scale) {
 		this->teamColor = command;
-		cell->figur = this;
-		centrSizeFigur_X = cell->centrSizeCell_X;
-		centrSizeFigur_Y = cell->centrSizeCell_Y;
-		coordinateFigur_X = cell->coordinateCell_X;
-		coordinateFigur_Y = cell->coordinateCell_Y;
+		cell->setFigure(this);
+		centrSizeFigur_X = cell->getCentrSizeCell_X();
+		centrSizeFigur_Y = cell->getCentrSizeCell_Y();
+		coordinateFigur_X = cell->getCoordinateCell_X();
+		coordinateFigur_Y = cell->getCoordinateCell_Y();
 	}
 
 	virtual void drawFigurPawn() = 0;
 	virtual bool checkMoveFigures(Board::Cell* cell) = 0;
 
 	void muveFigure(Board::Cell* cell) {
-		centrSizeFigur_X = cell->centrSizeCell_X;
-		centrSizeFigur_Y = cell->centrSizeCell_Y;
-		coordinateFigur_X = cell->coordinateCell_X;
-		coordinateFigur_Y = cell->coordinateCell_Y;
-		cell->figur = this;
+		centrSizeFigur_X = cell->getCentrSizeCell_X();
+		centrSizeFigur_Y = cell->getCentrSizeCell_Y();
+		coordinateFigur_X = cell->getCoordinateCell_X();
+		coordinateFigur_Y = cell->getCoordinateCell_Y();
+		cell->setFigure(this);
 	}
 
 	void figureAttack(Board::Cell* cell) {
 
 		for (vector<Figure*>::const_iterator iter = figurs.begin(); iter != figurs.end(); iter++) {
-			if (*iter == cell->figur) {
+			if (*iter == cell->getFigure()) {
 				figurs.erase(iter);
 				break;
 			}
 		}
 
-		cell->figur = this;
+		cell->setFigure(this);
 		this->muveFigure(cell);
 	}
 
-	virtual ~Figure() {}
+	int getCoordinateFigur_X() {
+		return coordinateFigur_X;
+	}
+
+	int getCoordinateFigur_Y() {
+		return coordinateFigur_Y;
+	}
+
+	int getCentrSizeFigur_X() {
+		return centrSizeFigur_X;
+	}
+
+	int getCentrSizeFigur_Y() {
+		return centrSizeFigur_Y;
+	}
+
+	bool getTeamColor() {
+		return teamColor;
+	}
+	
+protected:
 
 	int coordinateFigur_X;
 	int coordinateFigur_Y;
 	int centrSizeFigur_X;
 	int centrSizeFigur_Y;
 	bool teamColor;
-	bool active = true;
 };
 class FigureRook : public Figure {
 public:
@@ -198,19 +271,19 @@ public:
 	}
 
 	bool checkMoveFigures(Board::Cell* cell) {
-		if (coordinateFigur_X == cell->coordinateCell_X && coordinateFigur_Y > cell->coordinateCell_Y) {
-			for (int iy = coordinateFigur_Y - 1; iy > cell->coordinateCell_Y; iy--) {
-				if (board.getCell(cell->centrSizeCell_X, cell->scale*iy + cell->scale / 2)->figur != nullptr) {
-					cout << cell->scale*iy + cell->scale / 2 << endl;
+		if (coordinateFigur_X == cell->getCoordinateCell_X() && coordinateFigur_Y > cell->getCoordinateCell_Y()) {
+			for (int iy = coordinateFigur_Y - 1; iy > cell->getCoordinateCell_Y(); iy--) {
+				if (board.getCell(cell->getCentrSizeCell_X(), cell->getScale()*iy + cell->getScale() / 2)->getFigure() != nullptr) {
+					cout << cell->getScale()*iy + cell->getScale() / 2 << endl;
 					return false;
 				}
 			}
 
-			if (cell->figur == nullptr) {
+			if (cell->getFigure() == nullptr) {
 				this->muveFigure(cell);
 				return true;
 			}
-			else if (cell->figur != nullptr && cell->figur->teamColor != this->teamColor) {
+			else if (cell->getFigure() != nullptr && cell->getFigure()->getTeamColor() != this->teamColor) {
 				this->figureAttack(cell);
 				return true;
 			}
@@ -218,20 +291,20 @@ public:
 				return false;
 			}
 		}
-		else if (coordinateFigur_X < cell->coordinateCell_X && coordinateFigur_Y == cell->coordinateCell_Y && (cell->coordinateCell_X < cell->scale * 8)) {
+		else if (coordinateFigur_X < cell->getCoordinateCell_X() && coordinateFigur_Y == cell->getCoordinateCell_Y() && (cell->getCoordinateCell_X() < cell->getScale() * 8)) {
 
-			for (int ix = coordinateFigur_X + 1; ix < cell->coordinateCell_X; ix++) {
-				if (board.getCell(cell->scale*ix + cell->scale / 2, cell->centrSizeCell_Y)->figur != nullptr) {
-					cout << cell->scale*ix + cell->scale / 2 << endl;
+			for (int ix = coordinateFigur_X + 1; ix < cell->getCoordinateCell_X(); ix++) {
+				if (board.getCell(cell->getScale()*ix + cell->getScale() / 2, cell->getCoordinateCell_Y())->getFigure() != nullptr) {
+					cout << cell->getScale()*ix + cell->getScale() / 2 << endl;
 					return false;
 				}
 			}
 
-			if (cell->figur == nullptr) {
+			if (cell->getFigure() == nullptr) {
 				this->muveFigure(cell);
 				return true;
 			}
-			else if (cell->figur != nullptr && cell->figur->teamColor != this->teamColor) {
+			else if (cell->getFigure() != nullptr && cell->getFigure()->getTeamColor() != this->teamColor) {
 				this->figureAttack(cell);
 				return true;
 			}
@@ -239,19 +312,19 @@ public:
 				return false;
 			}
 		}
-		else if (coordinateFigur_X == cell->coordinateCell_X && coordinateFigur_Y < cell->coordinateCell_Y && (cell->coordinateCell_Y < cell->scale * 8)) {
-			for (int iy = coordinateFigur_Y + 1; iy < cell->coordinateCell_Y; iy++) {
-				if (board.getCell(cell->centrSizeCell_X, cell->scale*iy + cell->scale / 2)->figur != nullptr) {
-					cout << cell->scale*iy + cell->scale / 2 << endl;
+		else if (coordinateFigur_X == cell->getCoordinateCell_X() && coordinateFigur_Y < cell->getCoordinateCell_Y() && (cell->getCoordinateCell_Y() < cell->getScale() * 8)) {
+			for (int iy = coordinateFigur_Y + 1; iy < cell->getCoordinateCell_Y(); iy++) {
+				if (board.getCell(cell->getCentrSizeCell_X(), cell->getScale()*iy + cell->getScale() / 2)->getFigure() != nullptr) {
+					cout << cell->getScale()*iy + cell->getScale() / 2 << endl;
 					return false;
 				}
 			}
 
-			if (cell->figur == nullptr) {
+			if (cell->getFigure() == nullptr) {
 				this->muveFigure(cell);
 				return true;
 			}
-			else if (cell->figur != nullptr && cell->figur->teamColor != this->teamColor) {
+			else if (cell->getFigure() != nullptr && cell->getFigure()->getTeamColor() != this->teamColor) {
 				this->figureAttack(cell);
 				return true;
 			}
@@ -259,19 +332,19 @@ public:
 				return false;
 			}
 		}
-		else if (coordinateFigur_X > cell->coordinateCell_X && coordinateFigur_Y == cell->coordinateCell_Y) {
-			for (int ix = coordinateFigur_X - 1; ix > cell->coordinateCell_X; ix--) {
-				if (board.getCell(cell->scale*ix + cell->scale / 2, cell->centrSizeCell_Y)->figur != nullptr) {
-					cout << cell->scale*ix + cell->scale / 2 << endl;
+		else if (coordinateFigur_X > cell->getCoordinateCell_X() && coordinateFigur_Y == cell->getCoordinateCell_Y()) {
+			for (int ix = coordinateFigur_X - 1; ix > cell->getCoordinateCell_X(); ix--) {
+				if (board.getCell(cell->getScale()*ix + cell->getScale() / 2, cell->getCentrSizeCell_Y())->getFigure() != nullptr) {
+					cout << cell->getScale()*ix + cell->getScale() / 2 << endl;
 					return false;
 				}
 			}
 
-			if (cell->figur == nullptr) {
+			if (cell->getFigure() == nullptr) {
 				this->muveFigure(cell);
 				return true;
 			}
-			else if (cell->figur != nullptr && cell->figur->teamColor != this->teamColor) {
+			else if (cell->getFigure() != nullptr && cell->getFigure()->getTeamColor() != this->teamColor) {
 				this->figureAttack(cell);
 				return true;
 			}
@@ -313,19 +386,19 @@ public:
 	}
 
 	bool checkMoveFigures(Board::Cell* cell) {
-		if ((coordinateFigur_X - 1 == cell->coordinateCell_X && coordinateFigur_Y - 2 == cell->coordinateCell_Y) ||
-			(coordinateFigur_X + 1 == cell->coordinateCell_X && coordinateFigur_Y - 2 == cell->coordinateCell_Y) ||
-			(coordinateFigur_X + 2 == cell->coordinateCell_X && coordinateFigur_Y - 1 == cell->coordinateCell_Y) ||
-			(coordinateFigur_X + 2 == cell->coordinateCell_X && coordinateFigur_Y + 1 == cell->coordinateCell_Y) ||
-			(coordinateFigur_X + 1 == cell->coordinateCell_X && coordinateFigur_Y + 2 == cell->coordinateCell_Y) ||
-			(coordinateFigur_X - 1 == cell->coordinateCell_X && coordinateFigur_Y + 2 == cell->coordinateCell_Y) ||
-			(coordinateFigur_X - 2 == cell->coordinateCell_X && coordinateFigur_Y + 1 == cell->coordinateCell_Y) ||
-			(coordinateFigur_X - 2 == cell->coordinateCell_X && coordinateFigur_Y - 1 == cell->coordinateCell_Y)) {
-			if (cell->figur == nullptr) {
+		if ((coordinateFigur_X - 1 == cell->getCoordinateCell_X() && coordinateFigur_Y - 2 == cell->getCoordinateCell_Y()) ||
+			(coordinateFigur_X + 1 == cell->getCoordinateCell_X() && coordinateFigur_Y - 2 == cell->getCoordinateCell_Y()) ||
+			(coordinateFigur_X + 2 == cell->getCoordinateCell_X() && coordinateFigur_Y - 1 == cell->getCoordinateCell_Y()) ||
+			(coordinateFigur_X + 2 == cell->getCoordinateCell_X() && coordinateFigur_Y + 1 == cell->getCoordinateCell_Y()) ||
+			(coordinateFigur_X + 1 == cell->getCoordinateCell_X() && coordinateFigur_Y + 2 == cell->getCoordinateCell_Y()) ||
+			(coordinateFigur_X - 1 == cell->getCoordinateCell_X() && coordinateFigur_Y + 2 == cell->getCoordinateCell_Y()) ||
+			(coordinateFigur_X - 2 == cell->getCoordinateCell_X() && coordinateFigur_Y + 1 == cell->getCoordinateCell_Y()) ||
+			(coordinateFigur_X - 2 == cell->getCoordinateCell_X() && coordinateFigur_Y - 1 == cell->getCoordinateCell_Y())) {
+			if (cell->getFigure() == nullptr) {
 				this->muveFigure(cell);
 				return true;
 			}
-			else if (cell->figur != nullptr && cell->figur->teamColor != this->teamColor) {
+			else if (cell->getFigure() != nullptr && cell->getFigure()->getTeamColor() != this->teamColor) {
 				this->figureAttack(cell);
 				return true;
 			}
@@ -367,21 +440,21 @@ public:
 	}
 
 	bool checkMoveFigures(Board::Cell* cell) {
-		if (cell->coordinateCell_X - coordinateFigur_X == cell->coordinateCell_Y - coordinateFigur_Y && cell->coordinateCell_X > coordinateFigur_X && cell->coordinateCell_Y > coordinateFigur_Y) {
+		if (cell->getCoordinateCell_X() - coordinateFigur_X == cell->getCoordinateCell_Y() - coordinateFigur_Y && cell->getCoordinateCell_X() > coordinateFigur_X && cell->getCoordinateCell_Y() > coordinateFigur_Y) {
 			int iy = coordinateFigur_Y + 1, ix = coordinateFigur_X + 1;
-			while (cell->coordinateCell_X > ix && cell->coordinateCell_Y > iy) {
-				if (board.getCell(cell->scale*ix + cell->scale / 2, cell->scale*iy + cell->scale / 2)->figur != nullptr) {
+			while (cell->getCoordinateCell_X() > ix && cell->getCoordinateCell_Y() > iy) {
+				if (board.getCell(cell->getScale()*ix + cell->getScale() / 2, cell->getScale()*iy + cell->getScale() / 2)->getFigure() != nullptr) {
 					return false;
 				}
 				++iy;
 				++ix;
 			}
 
-			if (cell->figur == nullptr) {
+			if (cell->getFigure() == nullptr) {
 				this->muveFigure(cell);
 				return true;
 			}
-			else if (cell->figur != nullptr && cell->figur->teamColor != this->teamColor) {
+			else if (cell->getFigure() != nullptr && cell->getFigure()->getTeamColor() != this->teamColor) {
 				this->figureAttack(cell);
 				return true;
 			}
@@ -389,21 +462,21 @@ public:
 				return false;
 			}
 		}
-		else if (coordinateFigur_X - cell->coordinateCell_X == coordinateFigur_Y - cell->coordinateCell_Y && cell->coordinateCell_X < coordinateFigur_X && cell->coordinateCell_Y < coordinateFigur_Y) {
+		else if (coordinateFigur_X - cell->getCoordinateCell_X() == coordinateFigur_Y - cell->getCoordinateCell_Y() && cell->getCoordinateCell_X() < coordinateFigur_X && cell->getCoordinateCell_Y() < coordinateFigur_Y) {
 			int iy = coordinateFigur_Y - 1, ix = coordinateFigur_X - 1;
-			while (cell->coordinateCell_X < ix && cell->coordinateCell_Y < iy) {
-				if (board.getCell(cell->scale*ix + cell->scale / 2, cell->scale*iy + cell->scale / 2)->figur != nullptr) {
+			while (cell->getCoordinateCell_X() < ix && cell->getCoordinateCell_Y() < iy) {
+				if (board.getCell(cell->getScale()*ix + cell->getScale() / 2, cell->getScale()*iy + cell->getScale() / 2)->getFigure() != nullptr) {
 					return false;
 				}
 				--iy;
 				--ix;
 			}
 
-			if (cell->figur == nullptr) {
+			if (cell->getFigure() == nullptr) {
 				this->muveFigure(cell);
 				return true;
 			}
-			else if (cell->figur != nullptr && cell->figur->teamColor != this->teamColor) {
+			else if (cell->getFigure() != nullptr && cell->getFigure()->getTeamColor() != this->teamColor) {
 				this->figureAttack(cell);
 				return true;
 			}
@@ -411,21 +484,21 @@ public:
 				return false;
 			}
 		}
-		else if (coordinateFigur_X - cell->coordinateCell_X == cell->coordinateCell_Y - coordinateFigur_Y && cell->coordinateCell_X < coordinateFigur_X && cell->coordinateCell_Y > coordinateFigur_Y) {
+		else if (coordinateFigur_X - cell->getCoordinateCell_X() == cell->getCoordinateCell_Y() - coordinateFigur_Y && cell->getCoordinateCell_X() < coordinateFigur_X && cell->getCoordinateCell_Y() > coordinateFigur_Y) {
 			int iy = coordinateFigur_Y + 1, ix = coordinateFigur_X - 1;
-			while (cell->coordinateCell_X < ix && cell->coordinateCell_Y > iy) {
-				if (board.getCell(cell->scale*ix + cell->scale / 2, cell->scale*iy + cell->scale / 2)->figur != nullptr) {
+			while (cell->getCoordinateCell_X() < ix && cell->getCoordinateCell_Y() > iy) {
+				if (board.getCell(cell->getScale()*ix + cell->getScale() / 2, cell->getScale()*iy + cell->getScale() / 2)->getFigure() != nullptr) {
 					return false;
 				}
 				++iy;
 				--ix;
 			}
 
-			if (cell->figur == nullptr) {
+			if (cell->getFigure() == nullptr) {
 				this->muveFigure(cell);
 				return true;
 			}
-			else if (cell->figur != nullptr && cell->figur->teamColor != this->teamColor) {
+			else if (cell->getFigure() != nullptr && cell->getFigure()->getTeamColor() != this->teamColor) {
 				this->figureAttack(cell);
 				return true;
 			}
@@ -433,21 +506,21 @@ public:
 				return false;
 			}
 		}
-		else if (cell->coordinateCell_X - coordinateFigur_X == coordinateFigur_Y - cell->coordinateCell_Y && cell->coordinateCell_X > coordinateFigur_X && cell->coordinateCell_Y < coordinateFigur_Y) {
+		else if (cell->getCoordinateCell_Y() - coordinateFigur_X == coordinateFigur_Y - cell->getCoordinateCell_Y() && cell->getCoordinateCell_X() > coordinateFigur_X && cell->getCoordinateCell_Y() < coordinateFigur_Y) {
 			int iy = coordinateFigur_Y - 1, ix = coordinateFigur_X + 1;
-			while (cell->coordinateCell_X > ix && cell->coordinateCell_Y < iy) {
-				if (board.getCell(cell->scale*ix + cell->scale / 2, cell->scale*iy + cell->scale / 2)->figur != nullptr) {
+			while (cell->getCoordinateCell_X() > ix && cell->getCoordinateCell_Y() < iy) {
+				if (board.getCell(cell->getScale()*ix + cell->getScale() / 2, cell->getScale()*iy + cell->getScale() / 2)->getFigure() != nullptr) {
 					return false;
 				}
 				--iy;
 				++ix;
 			}
 
-			if (cell->figur == nullptr) {
+			if (cell->getFigure() == nullptr) {
 				this->muveFigure(cell);
 				return true;
 			}
-			else if (cell->figur != nullptr && cell->figur->teamColor != this->teamColor) {
+			else if (cell->getFigure() != nullptr && cell->getFigure()->getTeamColor() != this->teamColor) {
 				this->figureAttack(cell);
 				return true;
 			}
@@ -492,21 +565,21 @@ public:
 	}
 
 	bool checkMoveFigures(Board::Cell* cell) {
-		if (cell->coordinateCell_X - coordinateFigur_X == cell->coordinateCell_Y - coordinateFigur_Y && cell->coordinateCell_X > coordinateFigur_X && cell->coordinateCell_Y > coordinateFigur_Y) {
+		if (cell->getCoordinateCell_X() - coordinateFigur_X == cell->getCoordinateCell_Y() - coordinateFigur_Y && cell->getCoordinateCell_X() > coordinateFigur_X && cell->getCoordinateCell_Y() > coordinateFigur_Y) {
 			int iy = coordinateFigur_Y + 1, ix = coordinateFigur_X + 1;
-			while (cell->coordinateCell_X > ix && cell->coordinateCell_Y > iy) {
-				if (board.getCell(cell->scale*ix + cell->scale / 2, cell->scale*iy + cell->scale / 2)->figur != nullptr) {
+			while (cell->getCoordinateCell_X() > ix && cell->getCoordinateCell_Y() > iy) {
+				if (board.getCell(cell->getScale()*ix + cell->getScale() / 2, cell->getScale()*iy + cell->getScale() / 2)->getFigure() != nullptr) {
 					return false;
 				}
 				++iy;
 				++ix;
 			}
 
-			if (cell->figur == nullptr) {
+			if (cell->getFigure() == nullptr) {
 				this->muveFigure(cell);
 				return true;
 			}
-			else if (cell->figur != nullptr && cell->figur->teamColor != this->teamColor) {
+			else if (cell->getFigure() != nullptr && cell->getFigure()->getTeamColor() != this->teamColor) {
 				this->figureAttack(cell);
 				return true;
 			}
@@ -514,21 +587,21 @@ public:
 				return false;
 			}
 		}
-		else if (coordinateFigur_X - cell->coordinateCell_X == coordinateFigur_Y - cell->coordinateCell_Y && cell->coordinateCell_X < coordinateFigur_X && cell->coordinateCell_Y < coordinateFigur_Y) {
+		else if (coordinateFigur_X - cell->getCoordinateCell_X() == coordinateFigur_Y - cell->getCoordinateCell_Y() && cell->getCoordinateCell_X() < coordinateFigur_X && cell->getCoordinateCell_Y() < coordinateFigur_Y) {
 			int iy = coordinateFigur_Y - 1, ix = coordinateFigur_X - 1;
-			while (cell->coordinateCell_X < ix && cell->coordinateCell_Y < iy) {
-				if (board.getCell(cell->scale*ix + cell->scale / 2, cell->scale*iy + cell->scale / 2)->figur != nullptr) {
+			while (cell->getCoordinateCell_X() < ix && cell->getCoordinateCell_Y() < iy) {
+				if (board.getCell(cell->getScale()*ix + cell->getScale() / 2, cell->getScale()*iy + cell->getScale() / 2)->getFigure() != nullptr) {
 					return false;
 				}
 				--iy;
 				--ix;
 			}
 
-			if (cell->figur == nullptr) {
+			if (cell->getFigure() == nullptr) {
 				this->muveFigure(cell);
 				return true;
 			}
-			else if (cell->figur != nullptr && cell->figur->teamColor != this->teamColor) {
+			else if (cell->getFigure() != nullptr && cell->getFigure()->getTeamColor() != this->teamColor) {
 				this->figureAttack(cell);
 				return true;
 			}
@@ -536,21 +609,21 @@ public:
 				return false;
 			}
 		}
-		else if (coordinateFigur_X - cell->coordinateCell_X == cell->coordinateCell_Y - coordinateFigur_Y && cell->coordinateCell_X < coordinateFigur_X && cell->coordinateCell_Y > coordinateFigur_Y) {
+		else if (coordinateFigur_X - cell->getCoordinateCell_X() == cell->getCoordinateCell_Y() - coordinateFigur_Y && cell->getCoordinateCell_X() < coordinateFigur_X && cell->getCoordinateCell_Y() > coordinateFigur_Y) {
 			int iy = coordinateFigur_Y + 1, ix = coordinateFigur_X - 1;
-			while (cell->coordinateCell_X < ix && cell->coordinateCell_Y > iy) {
-				if (board.getCell(cell->scale*ix + cell->scale / 2, cell->scale*iy + cell->scale / 2)->figur != nullptr) {
+			while (cell->getCoordinateCell_X() < ix && cell->getCoordinateCell_Y() > iy) {
+				if (board.getCell(cell->getScale()*ix + cell->getScale() / 2, cell->getScale()*iy + cell->getScale() / 2)->getFigure() != nullptr) {
 					return false;
 				}
 				++iy;
 				--ix;
 			}
 
-			if (cell->figur == nullptr) {
+			if (cell->getFigure() == nullptr) {
 				this->muveFigure(cell);
 				return true;
 			}
-			else if (cell->figur != nullptr && cell->figur->teamColor != this->teamColor) {
+			else if (cell->getFigure() != nullptr && cell->getFigure()->getTeamColor() != this->teamColor) {
 				this->figureAttack(cell);
 				return true;
 			}
@@ -558,21 +631,21 @@ public:
 				return false;
 			}
 		}
-		else if (cell->coordinateCell_X - coordinateFigur_X == coordinateFigur_Y - cell->coordinateCell_Y && cell->coordinateCell_X > coordinateFigur_X && cell->coordinateCell_Y < coordinateFigur_Y) {
+		else if (cell->getCoordinateCell_X() - coordinateFigur_X == coordinateFigur_Y - cell->getCoordinateCell_Y() && cell->getCoordinateCell_X() > coordinateFigur_X && cell->getCoordinateCell_Y() < coordinateFigur_Y) {
 			int iy = coordinateFigur_Y - 1, ix = coordinateFigur_X + 1;
-			while (cell->coordinateCell_X > ix && cell->coordinateCell_Y < iy) {
-				if (board.getCell(cell->scale*ix + cell->scale / 2, cell->scale*iy + cell->scale / 2)->figur != nullptr) {
+			while (cell->getCoordinateCell_X() > ix && cell->getCoordinateCell_Y() < iy) {
+				if (board.getCell(cell->getScale()*ix + cell->getScale() / 2, cell->getScale()*iy + cell->getScale() / 2)->getFigure() != nullptr) {
 					return false;
 				}
 				--iy;
 				++ix;
 			}
 
-			if (cell->figur == nullptr) {
+			if (cell->getFigure() == nullptr) {
 				this->muveFigure(cell);
 				return true;
 			}
-			else if (cell->figur != nullptr && cell->figur->teamColor != this->teamColor) {
+			else if (cell->getFigure() != nullptr && cell->getFigure()->getTeamColor() != this->teamColor) {
 				this->figureAttack(cell);
 				return true;
 			}
@@ -580,18 +653,18 @@ public:
 				return false;
 			}
 		}
-		else if (coordinateFigur_X == cell->coordinateCell_X && coordinateFigur_Y > cell->coordinateCell_Y) {
-			for (int iy = coordinateFigur_Y - 1; iy > cell->coordinateCell_Y; iy--) {
-				if (board.getCell(cell->centrSizeCell_X, cell->scale*iy + cell->scale / 2)->figur != nullptr) {
+		else if (coordinateFigur_X == cell->getCoordinateCell_X() && coordinateFigur_Y > cell->getCoordinateCell_Y()) {
+			for (int iy = coordinateFigur_Y - 1; iy > cell->getCoordinateCell_Y(); iy--) {
+				if (board.getCell(cell->getCentrSizeCell_X(), cell->getScale()*iy + cell->getScale() / 2)->getFigure() != nullptr) {
 					return false;
 				}
 			}
 
-			if (cell->figur == nullptr) {
+			if (cell->getFigure() == nullptr) {
 				this->muveFigure(cell);
 				return true;
 			}
-			else if (cell->figur != nullptr && cell->figur->teamColor != this->teamColor) {
+			else if (cell->getFigure() != nullptr && cell->getFigure()->getTeamColor() != this->teamColor) {
 				this->figureAttack(cell);
 				return true;
 			}
@@ -599,19 +672,19 @@ public:
 				return false;
 			}
 		}
-		else if (coordinateFigur_X < cell->coordinateCell_X && coordinateFigur_Y == cell->coordinateCell_Y && (cell->coordinateCell_X < cell->scale * 8)) {
+		else if (coordinateFigur_X < cell->getCoordinateCell_X() && coordinateFigur_Y == cell->getCoordinateCell_Y() && (cell->getCoordinateCell_X() < cell->getScale() * 8)) {
 
-			for (int ix = coordinateFigur_X + 1; ix < cell->coordinateCell_X; ix++) {
-				if (board.getCell(cell->scale*ix + cell->scale / 2, cell->centrSizeCell_Y)->figur != nullptr) {
+			for (int ix = coordinateFigur_X + 1; ix < cell->getCoordinateCell_X(); ix++) {
+				if (board.getCell(cell->getScale()*ix + cell->getScale() / 2, cell->getCentrSizeCell_Y())->getFigure() != nullptr) {
 					return false;
 				}
 			}
 
-			if (cell->figur == nullptr) {
+			if (cell->getFigure() == nullptr) {
 				this->muveFigure(cell);
 				return true;
 			}
-			else if (cell->figur != nullptr && cell->figur->teamColor != this->teamColor) {
+			else if (cell->getFigure() != nullptr && cell->getFigure()->getTeamColor() != this->teamColor) {
 				this->figureAttack(cell);
 				return true;
 			}
@@ -619,18 +692,18 @@ public:
 				return false;
 			}
 		}
-		else if (coordinateFigur_X == cell->coordinateCell_X && coordinateFigur_Y < cell->coordinateCell_Y && (cell->coordinateCell_Y < cell->scale * 8)) {
-			for (int iy = coordinateFigur_Y + 1; iy < cell->coordinateCell_Y; iy++) {
-				if (board.getCell(cell->centrSizeCell_X, cell->scale*iy + cell->scale / 2)->figur != nullptr) {
+		else if (coordinateFigur_X == cell->getCoordinateCell_X() && coordinateFigur_Y < cell->getCoordinateCell_Y() && (cell->getCoordinateCell_Y() < cell->getScale() * 8)) {
+			for (int iy = coordinateFigur_Y + 1; iy < cell->getCoordinateCell_Y(); iy++) {
+				if (board.getCell(cell->getCentrSizeCell_X(), cell->getScale()*iy + cell->getScale() / 2)->getFigure() != nullptr) {
 					return false;
 				}
 			}
 
-			if (cell->figur == nullptr) {
+			if (cell->getFigure() == nullptr) {
 				this->muveFigure(cell);
 				return true;
 			}
-			else if (cell->figur != nullptr && cell->figur->teamColor != this->teamColor) {
+			else if (cell->getFigure() != nullptr && cell->getFigure()->getTeamColor() != this->teamColor) {
 				this->figureAttack(cell);
 				return true;
 			}
@@ -638,18 +711,18 @@ public:
 				return false;
 			}
 		}
-		else if (coordinateFigur_X > cell->coordinateCell_X && coordinateFigur_Y == cell->coordinateCell_Y) {
-			for (int ix = coordinateFigur_X - 1; ix > cell->coordinateCell_X; ix--) {
-				if (board.getCell(cell->scale*ix + cell->scale / 2, cell->centrSizeCell_Y)->figur != nullptr) {
+		else if (coordinateFigur_X > cell->getCoordinateCell_X() && coordinateFigur_Y == cell->getCoordinateCell_Y()) {
+			for (int ix = coordinateFigur_X - 1; ix > cell->getCoordinateCell_X(); ix--) {
+				if (board.getCell(cell->getScale()*ix + cell->getScale() / 2, cell->getCentrSizeCell_Y())->getFigure() != nullptr) {
 					return false;
 				}
 			}
 
-			if (cell->figur == nullptr) {
+			if (cell->getFigure() == nullptr) {
 				this->muveFigure(cell);
 				return true;
 			}
-			else if (cell->figur != nullptr && cell->figur->teamColor != this->teamColor) {
+			else if (cell->getFigure() != nullptr && cell->getFigure()->getTeamColor() != this->teamColor) {
 				this->figureAttack(cell);
 				return true;
 			}
@@ -721,19 +794,19 @@ public:
 	}
 
 	bool checkMoveFigures(Board::Cell* cell) {
-		if ((coordinateFigur_X - 1 == cell->coordinateCell_X && coordinateFigur_Y - 1 == cell->coordinateCell_Y) ||
-			(coordinateFigur_X == cell->coordinateCell_X && coordinateFigur_Y - 1 == cell->coordinateCell_Y) ||
-			(coordinateFigur_X + 1 == cell->coordinateCell_X && coordinateFigur_Y - 1 == cell->coordinateCell_Y) ||
-			(coordinateFigur_X + 1 == cell->coordinateCell_X && coordinateFigur_Y == cell->coordinateCell_Y) ||
-			(coordinateFigur_X + 1 == cell->coordinateCell_X && coordinateFigur_Y + 1 == cell->coordinateCell_Y) ||
-			(coordinateFigur_X == cell->coordinateCell_X && coordinateFigur_Y + 1 == cell->coordinateCell_Y) ||
-			(coordinateFigur_X - 1 == cell->coordinateCell_X && coordinateFigur_Y + 1 == cell->coordinateCell_Y) ||
-			(coordinateFigur_X - 1 == cell->coordinateCell_X && coordinateFigur_Y == cell->coordinateCell_Y)) {
-			if (cell->figur == nullptr) {
+		if ((coordinateFigur_X - 1 == cell->getCoordinateCell_X() && coordinateFigur_Y - 1 == cell->getCoordinateCell_Y()) ||
+			(coordinateFigur_X == cell->getCoordinateCell_X() && coordinateFigur_Y - 1 == cell->getCoordinateCell_Y()) ||
+			(coordinateFigur_X + 1 == cell->getCoordinateCell_X() && coordinateFigur_Y - 1 == cell->getCoordinateCell_Y()) ||
+			(coordinateFigur_X + 1 == cell->getCoordinateCell_X() && coordinateFigur_Y == cell->getCoordinateCell_Y()) ||
+			(coordinateFigur_X + 1 == cell->getCoordinateCell_X() && coordinateFigur_Y + 1 == cell->getCoordinateCell_Y()) ||
+			(coordinateFigur_X == cell->getCoordinateCell_X() && coordinateFigur_Y + 1 == cell->getCoordinateCell_Y()) ||
+			(coordinateFigur_X - 1 == cell->getCoordinateCell_X() && coordinateFigur_Y + 1 == cell->getCoordinateCell_Y()) ||
+			(coordinateFigur_X - 1 == cell->getCoordinateCell_X() && coordinateFigur_Y == cell->getCoordinateCell_Y())) {
+			if (cell->getFigure() == nullptr) {
 				this->muveFigure(cell);
 				return true;
 			}
-			else if (cell->figur != nullptr && cell->figur->teamColor != this->teamColor) {
+			else if (cell->getFigure() != nullptr && cell->getFigure()->getTeamColor() != this->teamColor) {
 				this->figureAttack(cell);
 				return true;
 			}
@@ -775,10 +848,10 @@ public:
 
 	bool checkMoveFigures(Board::Cell* cell) {
 		if (teamColor) {
-			if (coordinateFigur_Y + 1 == cell->coordinateCell_Y && coordinateFigur_X == cell->coordinateCell_X) {
-				if (cell->figur == nullptr) {
+			if (coordinateFigur_Y + 1 == cell->getCoordinateCell_Y() && coordinateFigur_X == cell->getCoordinateCell_X()) {
+				if (cell->getFigure() == nullptr) {
 					this->muveFigure(cell);
-					if (cell->coordinateCell_Y == 7) {
+					if (cell->getCoordinateCell_Y() == 7) {
 						pawnToQueen = true;
 					}
 					firstMovePawn = false;
@@ -788,9 +861,9 @@ public:
 					return false;
 				}
 			}
-			else if (coordinateFigur_Y + 2 == cell->coordinateCell_Y && firstMovePawn == true && coordinateFigur_X == cell->coordinateCell_X) {
-				if (cell->figur == nullptr) {
-					if (board.getCell(cell->centrSizeCell_X, cell->centrSizeCell_Y - cell->scale)->figur != nullptr) {
+			else if (coordinateFigur_Y + 2 == cell->getCoordinateCell_Y() && firstMovePawn == true && coordinateFigur_X == cell->getCoordinateCell_X()) {
+				if (cell->getFigure() == nullptr) {
+					if (board.getCell(cell->getCentrSizeCell_X(), cell->getCentrSizeCell_Y() - cell->getScale())->getFigure() != nullptr) {
 						return false;
 					}
 					else {
@@ -803,10 +876,10 @@ public:
 					return false;
 				}
 			}
-			else if (coordinateFigur_Y + 1 == cell->coordinateCell_Y && (coordinateFigur_X + 1 == cell->coordinateCell_X || coordinateFigur_X - 1 == cell->coordinateCell_X)) {
-				if (cell->figur != nullptr && cell->figur->teamColor != this->teamColor) {
+			else if (coordinateFigur_Y + 1 == cell->getCoordinateCell_Y() && (coordinateFigur_X + 1 == cell->getCoordinateCell_X() || coordinateFigur_X - 1 == cell->getCoordinateCell_X())) {
+				if (cell->getFigure() != nullptr && cell->getFigure()->getTeamColor() != this->teamColor) {
 					this->figureAttack(cell);
-					if (cell->coordinateCell_Y == 7) {
+					if (cell->getCoordinateCell_Y() == 7) {
 						pawnToQueen = true;
 					}
 					firstMovePawn = false;
@@ -821,10 +894,10 @@ public:
 			}
 		}
 		else {
-			if (coordinateFigur_Y - 1 == cell->coordinateCell_Y && coordinateFigur_X == cell->coordinateCell_X) {
-				if (cell->figur == nullptr) {
+			if (coordinateFigur_Y - 1 == cell->getCoordinateCell_Y() && coordinateFigur_X == cell->getCoordinateCell_X()) {
+				if (cell->getFigure() == nullptr) {
 					this->muveFigure(cell);
-					if (cell->coordinateCell_Y == 0) {
+					if (cell->getCoordinateCell_Y() == 0) {
 						pawnToQueen = true;
 					}
 					firstMovePawn = false;
@@ -834,9 +907,9 @@ public:
 					return false;
 				}
 			}
-			else if (coordinateFigur_Y - 2 == cell->coordinateCell_Y && firstMovePawn == true && coordinateFigur_X == cell->coordinateCell_X) {
-				if (cell->figur == nullptr) {
-					if (board.getCell(cell->centrSizeCell_X, cell->centrSizeCell_Y + cell->scale)->figur != nullptr) {
+			else if (coordinateFigur_Y - 2 == cell->getCoordinateCell_Y() && firstMovePawn == true && coordinateFigur_X == cell->getCoordinateCell_X()) {
+				if (cell->getFigure() == nullptr) {
+					if (board.getCell(cell->getCentrSizeCell_X(), cell->getCentrSizeCell_Y() + cell->getScale())->getFigure() != nullptr) {
 						return false;
 					}
 					else {
@@ -849,10 +922,10 @@ public:
 					return false;
 				}
 			}
-			else if (coordinateFigur_Y - 1 == cell->coordinateCell_Y && (coordinateFigur_X + 1 == cell->coordinateCell_X || coordinateFigur_X - 1 == cell->coordinateCell_X)) {
-				if (cell->figur != nullptr && cell->figur->teamColor != this->teamColor) {
+			else if (coordinateFigur_Y - 1 == cell->getCoordinateCell_Y() && (coordinateFigur_X + 1 == cell->getCoordinateCell_X() || coordinateFigur_X - 1 == cell->getCoordinateCell_X())) {
+				if (cell->getFigure() != nullptr && cell->getFigure()->getTeamColor() != this->teamColor) {
 					this->figureAttack(cell);
-					if (cell->coordinateCell_Y == 0) {
+					if (cell->getCoordinateCell_Y() == 0) {
 						pawnToQueen = true;
 					}
 					firstMovePawn = false;
@@ -872,16 +945,16 @@ public:
 };
 
 void convertToQueen(Board::Cell* cell) {
-	bool curCommand = cell->figur->teamColor;
+	bool curCommand = cell->getFigure()->getTeamColor();
 	for (vector<Figure*>::const_iterator iter = figurs.begin(); iter != figurs.end(); iter++) {
-		if (*iter == cell->figur) {
+		if (*iter == cell->getFigure()) {
 			figurs.erase(iter);
 			break;
 		}
 	}
-	delete cell->figur;
-	cell->figur = nullptr;
-	figurs.push_back(new FigureQueen(cell, curCommand, cell->scale));
+	//delete cell->getFigure();
+	cell->setFigure(nullptr);
+	figurs.push_back(new FigureQueen(cell, curCommand, cell->getScale()));
 	pawnToQueen = false;
 }
 
@@ -891,40 +964,40 @@ void drawFigure() {
 	}
 }
 void createFigure() {
-	figurs.push_back(new FigureRook(&(board.cells[0]), true, board.scale));
-	figurs.push_back(new FigureRook(&(board.cells[7]), true, board.scale));
-	figurs.push_back(new FigureKnight(&(board.cells[1]), true, board.scale));
-	figurs.push_back(new FigureKnight(&(board.cells[6]), true, board.scale));
-	figurs.push_back(new FigureBishop(&(board.cells[2]), true, board.scale));
-	figurs.push_back(new FigureBishop(&(board.cells[5]), true, board.scale));
-	figurs.push_back(new FigureKing(&(board.cells[3]), true, board.scale));
-	figurs.push_back(new FigureQueen(&(board.cells[4]), true, board.scale));
+	figurs.push_back(new FigureRook(&(board.getCells()[0]), true, board.getScale()));
+	figurs.push_back(new FigureRook(&(board.getCells()[7]), true, board.getScale()));
+	figurs.push_back(new FigureKnight(&(board.getCells()[1]), true, board.getScale()));
+	figurs.push_back(new FigureKnight(&(board.getCells()[6]), true, board.getScale()));
+	figurs.push_back(new FigureBishop(&(board.getCells()[2]), true, board.getScale()));
+	figurs.push_back(new FigureBishop(&(board.getCells()[5]), true, board.getScale()));
+	figurs.push_back(new FigureKing(&(board.getCells()[3]), true, board.getScale()));
+	figurs.push_back(new FigureQueen(&(board.getCells()[4]), true, board.getScale()));
 
 	for (int i = 8; i < 16; i++) {
-		figurs.push_back(new FigurePawn(&(board.cells[i]), true, board.scale));
+		figurs.push_back(new FigurePawn(&(board.getCells()[i]), true, board.getScale()));
 	}
 
 	for (int i = 48; i < 56; i++) {
-		figurs.push_back(new FigurePawn(&(board.cells[i]), false, board.scale));
+		figurs.push_back(new FigurePawn(&(board.getCells()[i]), false, board.getScale()));
 	}
-	figurs.push_back(new FigureRook(&(board.cells[56]), false, board.scale));
-	figurs.push_back(new FigureRook(&(board.cells[63]), false, board.scale));
-	figurs.push_back(new FigureKnight(&(board.cells[57]), false, board.scale));
-	figurs.push_back(new FigureKnight(&(board.cells[62]), false, board.scale));
-	figurs.push_back(new FigureBishop(&(board.cells[58]), false, board.scale));
-	figurs.push_back(new FigureBishop(&(board.cells[61]), false, board.scale));
-	figurs.push_back(new FigureKing(&(board.cells[59]), false, board.scale));
-	figurs.push_back(new FigureQueen(&(board.cells[60]), false, board.scale));
+	figurs.push_back(new FigureRook(&(board.getCells()[56]), false, board.getScale()));
+	figurs.push_back(new FigureRook(&(board.getCells()[63]), false, board.getScale()));
+	figurs.push_back(new FigureKnight(&(board.getCells()[57]), false, board.getScale()));
+	figurs.push_back(new FigureKnight(&(board.getCells()[62]), false, board.getScale()));
+	figurs.push_back(new FigureBishop(&(board.getCells()[58]), false, board.getScale()));
+	figurs.push_back(new FigureBishop(&(board.getCells()[61]), false, board.getScale()));
+	figurs.push_back(new FigureKing(&(board.getCells()[59]), false, board.getScale()));
+	figurs.push_back(new FigureQueen(&(board.getCells()[60]), false, board.getScale()));
 }
 
 void movementFigure(bool team) {
 	if (afm.g_state == 1) {
 		afm.prev_cell_r = board.getCell(afm.g_x, afm.g_y);
-		if (afm.prev_cell_r->figur != nullptr && afm.prev_cell_r->figur->teamColor == team) {
-			afm.figure_r = afm.prev_cell_r->figur;
+		if (afm.prev_cell_r->getFigure() != nullptr && afm.prev_cell_r->getFigure()->getTeamColor() == team) {
+			afm.figure_r = afm.prev_cell_r->getFigure();
 			afm.prev_cell_r->colorGetCell(BLUE);
 		}
-		else if (afm.prev_cell_r->figur != nullptr) {
+		else if (afm.prev_cell_r->getFigure() != nullptr) {
 			afm.prev_cell_r->colorGetCell(RED);
 			afm.g_state = 0;
 		}
@@ -934,7 +1007,7 @@ void movementFigure(bool team) {
 		}
 	}
 	if (afm.g_state == 2) {
-		if (afm.g_x < 0 || afm.g_y < 0 || afm.g_x > board.scale * 8 || afm.g_x > board.scale * 8) {
+		if (afm.g_x < 0 || afm.g_y < 0 || afm.g_x > board.getScale() * 8 || afm.g_x > board.getScale() * 8) {
 			afm.nullData();
 		}
 		else {
@@ -945,7 +1018,7 @@ void movementFigure(bool team) {
 				if (pawnToQueen) {
 					convertToQueen(afm.cell_r);
 				}
-				afm.prev_cell_r->figur = nullptr;
+				afm.prev_cell_r->setFigure(nullptr);
 				afm.nullData();
 				teamMove = !team;
 			}
@@ -967,7 +1040,6 @@ void game() {
 	board.drawBoard();
 	drawFigure();
 
-	//î÷åðåäü êîìàíäû
 	if (teamMove) {
 		movementFigure(true);
 	}
@@ -978,7 +1050,6 @@ void game() {
 	glFlush();
 }
 
-//öûêë ïðîãðàììû
 void timer(int = 0) {
 
 	game();
@@ -990,10 +1061,10 @@ void timer(int = 0) {
 		else {
 			glColor3f(0.9, 0.9, 0.9);
 		}
-		glRectf(0, 0, 6, board.scale * 8);
-		glRectf(0, 0, board.scale * 8, 6);
-		glRectf(0, board.scale * 8 - 6, board.scale * 8, board.scale * 8);
-		glRectf(board.scale * 8 - 6, 0, board.scale * 8, board.scale * 8);
+		glRectf(0, 0, 6, board.getScale() * 8);
+		glRectf(0, 0, board.getScale() * 8, 6);
+		glRectf(0, board.getScale() * 8 - 6, board.getScale() * 8, board.getScale() * 8);
+		glRectf(board.getScale() * 8 - 6, 0, board.getScale() * 8, board.getScale() * 8);
 		glFlush();
 		return;
 	}
@@ -1020,13 +1091,13 @@ int main(int argc, char **argv) {
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
-	glutInitWindowSize(board.scale * 8, board.scale * 8);
+	glutInitWindowSize(board.getScale() * 8, board.getScale() * 8);
 	glutCreateWindow("MyChess");
 	glClearColor(0.8, 0.6, 0.4, 0.0);
 
 	glLoadIdentity();
 	glutMouseFunc(MousePressed);
-	gluOrtho2D(0, board.scale * 8, board.scale * 8, 0);
+	gluOrtho2D(0, board.getScale() * 8, board.getScale() * 8, 0);
 
 	glutTimerFunc(20, timer, 0);
 
