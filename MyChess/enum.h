@@ -1,31 +1,33 @@
 #pragma once
 
+namespace chess {
 
-enum BorderColorCell {
-	GREEN, 
-	RED, 
-	BLUE, 
-	WHITE
-};
+	enum class BorderColorCell {
+		GREEN,
+		RED,
+		BLUE,
+		WHITE
+	};
 
-enum TeamColor {
-	WHITE_TEAM,
-	BLACK_TEAM
-};
+	enum class TeamColor {
+		WHITE,
+		BLACK
+	};
 
-enum StateMouse {
-	FREE,
-	PUSH,
-	RELEASE
-};
+	enum class StateMouse {
+		FREE,
+		PUSH,
+		RELEASE
+	};
 
-enum KillingKing {
-	WHITE_KING,
-	BLACK_KING,
-	LIVE_BOTH
-};
+	enum class KillingKing {
+		WHITE,
+		BLACK,
+		LIVE
+	};
 
-enum CurrentTeamMove {
-	WHITE_MOVE,
-	BLACK_MOVE
-};
+	enum class CurrentTeamMove {
+		WHITE,
+		BLACK
+	};
+}

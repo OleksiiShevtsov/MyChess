@@ -5,21 +5,24 @@
 #include <memory>
 #include <glut.h>
 
-class Board {
-public:
-	Board(common::Scale scale);
+namespace chess {
 
-	static Cell* getCellByCoordinates(common::Coordinate xCoordinate, common::Coordinate yCoordinate);
-	static Cell* getCellByPosition(int position);
+	class Board {
+	public:
+		Board(common::Scale scale);
 
-	common::Scale getScale();
+		static Cell* getCellByCoordinates(common::Coordinate xCoordinate, common::Coordinate yCoordinate);
+		static Cell* getCellByPosition(int position);
 
-	void drawBoard();
+		common::Scale getScale();
 
-private:
-	std::vector<Cell> m_cells;
-	common::Scale m_scale;
+		void drawBoard();
 
-	static const int NUMBER_OF_CELLS;
-	static Board* boardStaticPtr;
-};
+	private:
+		std::vector<Cell> m_cells;
+		common::Scale m_scale;
+
+		static const int NUMBER_OF_CELLS;
+		static Board* boardStaticPtr;
+	};
+}

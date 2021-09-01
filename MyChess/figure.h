@@ -4,27 +4,30 @@
 #include "enum.h"
 #include "cell.h"
 
-class IFigure {
-public:
-	IFigure(Cell* cell, TeamColor teamColor, common::Scale scale);
-	virtual ~IFigure() = 0;
+namespace chess {
 
-	virtual void drawFigur() = 0;
-	virtual bool checkMoveFigures(Cell& cell) = 0;
+	class IFigure {
+	public:
+		IFigure(Cell& cell, TeamColor teamColor, common::Scale scale);
+		virtual ~IFigure() {};
 
-	void muveFigure(Cell* cell);
-	void figureAttack(Cell* cell);
+		virtual void drawFigur() = 0;
+		virtual bool checkMoveFigure(Cell*) {}
 
-	common::Position getXfigurePosition() const;
-	common::Position getYfigurePosition() const;
-	common::Coordinate getXfigureCenterCoordinate() const;
-	common::Coordinate getYfigureCenterCoordinate() const;
-	TeamColor getTeamColor();
+		void muveFigure(Cell&);
+		void figureAttack(Cell&);
 
-protected:
+		common::Position getXfigurePosition() const;
+		common::Position getYfigurePosition() const;
+		common::Coordinate getXfigureCenterCoordinate() const;
+		common::Coordinate getYfigureCenterCoordinate() const;
+		TeamColor getTeamColor();
 
-	common::Position m_xPosition;
-	common::Position m_yPosition;
-	common::Scale m_scale;
-	TeamColor m_teamColor;
-};
+	protected:
+
+		common::Position m_xPosition;
+		common::Position m_yPosition;
+		common::Scale m_scale;
+		TeamColor m_teamColor;
+	};
+}

@@ -1,6 +1,6 @@
 #include "cell.h"
 
-Cell::Cell(common::Position xPosition, common::Position yPosition, common::Scale scale, bool colorCell) :
+chess::Cell::Cell(common::Position xPosition, common::Position yPosition, common::Scale scale, bool colorCell) :
 	m_xPosition{ xPosition },
 	m_yPosition{ yPosition },
 	m_scale{ scale },
@@ -8,39 +8,39 @@ Cell::Cell(common::Position xPosition, common::Position yPosition, common::Scale
 {
 }
 
-common::Position Cell::getXcellPosition() const {
+chess::common::Position chess::Cell::getXcellPosition() const {
 	return m_xPosition;
 }
 
-common::Position Cell::getYcellPosition() const {
+chess::common::Position chess::Cell::getYcellPosition() const {
 	return m_yPosition;
 }
 
-common::Coordinate Cell::getXcellCoordinate() const {
+chess::common::Coordinate chess::Cell::getXcellCoordinate() const {
 	return m_xPosition * m_scale;
 }
 
-common::Coordinate Cell::getYcellCoordinate() const {
+chess::common::Coordinate chess::Cell::getYcellCoordinate() const {
 	return m_yPosition * m_scale;
 }
 
-common::Coordinate Cell::getXcellCenterCoordinate() const {
+chess::common::Coordinate chess::Cell::getXcellCenterCoordinate() const {
 	return getXcellCoordinate() + m_scale / 2;
 }
 
-common::Coordinate Cell::getYcellCenterCoordinate() const {
+chess::common::Coordinate chess::Cell::getYcellCenterCoordinate() const {
 	return getYcellCoordinate() + m_scale / 2;
 }
 
-bool Cell::getColorCell() const {
+bool chess::Cell::getColorCell() const {
 	return m_colorCell;
 }
 
-IFigure* Cell::getFigure() const {
+chess::IFigure* chess::Cell::getFigure() const {
 	return m_figure;
 }
 
-void Cell::setBorderColorCells(BorderColorCell borderColorCell) {
+void chess::Cell::setBorderColorCells(BorderColorCell borderColorCell) {
 	switch (borderColorCell) {
 	case BorderColorCell::GREEN:glColor3f(0.0, 1.0, 0.0); break;
 	case BorderColorCell::RED:glColor3f(1.0, 0.0, 0.0); break;
@@ -54,6 +54,6 @@ void Cell::setBorderColorCells(BorderColorCell borderColorCell) {
 	glRectf(getXcellCoordinate(), getYcellCoordinate(), getXcellCoordinate() + m_scale, getYcellCoordinate() + 2);
 }
 
-void Cell::setFigure(IFigure* figur) {
-	m_figure = figur;
+void chess::Cell::setFigure(IFigure* figure) {
+	m_figure = figure;
 }
