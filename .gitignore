@@ -1,0 +1,10 @@
+#Directories
+MyChess/MyChess/Debug
+MyChess/MyChess/Release
+MyChess/MyChess/x64
+MyChess/MyChess/.vs
+MyChess/Debug
+MyChess/Release
+MyChess/x64
+MyChess/.vs
+/.vs
